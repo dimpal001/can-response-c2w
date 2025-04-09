@@ -1,0 +1,806 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/auth/generated/client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("AUTH_DB_URL")
+}
+
+model AnchorText {
+  id              String          @id
+  categoryId      String          @unique
+  data            String          @db.Text
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime
+  ProductCategory ProductCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+model Announcements {
+  id   String  @id
+  text String?
+}
+
+model AuditLog {
+  id          String   @id
+  userId      String?
+  action      String
+  description String?
+  createdAt   DateTime @default(now())
+  User        User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "AuditLog_userId_fkey")
+}
+
+model BestSelling {
+  id        String @id
+  title     String
+  hyperLink String
+  price     String
+}
+
+model CallRequest {
+  id           String   @id
+  mobileNumber String
+  orderId      String?
+  isRead       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+}
+
+model CartItem {
+  id           String        @id
+  userId       String
+  productId    String
+  quantity     Int
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime
+  colorId      String?
+  sizeId       String?
+  imageId      String?
+  ProductColor ProductColor? @relation(fields: [colorId], references: [id])
+  ProductImage ProductImage? @relation(fields: [imageId], references: [id])
+  Product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  User         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([colorId], map: "CartItem_colorId_fkey")
+  @@index([imageId], map: "CartItem_imageId_fkey")
+  @@index([productId], map: "CartItem_productId_fkey")
+  @@index([userId], map: "CartItem_userId_fkey")
+}
+
+model ContactUs {
+  id        String   @id
+  name      String
+  email     String
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model CustomerType {
+  id        String    @id
+  name      String
+  slug      String    @unique
+  productId String?
+  Product   Product[]
+}
+
+model DeleteRequest {
+  id        String               @id
+  userId    String?
+  userName  String?
+  userEmail String?
+  reason    String?
+  status    DeleteRequest_status @default(REVIEW)
+  createdAt DateTime             @default(now())
+  User      User?                @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "DeleteRequest_userId_fkey")
+}
+
+model Discount {
+  id             String         @id
+  code           String         @unique
+  description    String?
+  amount         Float
+  type           Discount_type
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime
+  productId      String?
+  maxPrice       Float?
+  minPrice       Float?
+  isActive       Boolean        @default(true)
+  isSpecial      Boolean        @default(false)
+  orders         Int?
+  userEmails     Json
+  isWebAvailable Boolean        @default(true)
+  isCODAvailable Boolean        @default(false)
+  Product        Product?       @relation(fields: [productId], references: [id])
+  OrderDetails   OrderDetails[]
+
+  @@index([productId], map: "Discount_productId_fkey")
+}
+
+model DropMessage {
+  id        String    @id
+  userId    String
+  startedAt DateTime?
+  endedAt   DateTime?
+  createdAt DateTime  @default(now())
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "DropMessage_userId_fkey")
+}
+
+model ExclusiveCollection {
+  id                String   @id
+  imageUrl          String?
+  hyperLink         String?
+  categoryHyperLink String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime
+  mrp               Float?
+  price             Float?
+}
+
+model HeroSliders {
+  id                String   @id
+  imageUrl          String
+  hyperLink         String
+  categoryHyperLink String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime
+}
+
+model ImageWeek {
+  id        String  @id
+  hyperLink String?
+  imageUrl  String?
+}
+
+model Logos {
+  id       String  @id
+  logoUrl  String
+  isActive Boolean @default(false)
+  altText  String?
+}
+
+model Message {
+  id                             String   @id
+  senderId                       String
+  receiverId                     String
+  message                        String   @db.Text
+  createdAt                      DateTime @default(now())
+  handledById                    String?
+  User_Message_handledByIdToUser User?    @relation("Message_handledByIdToUser", fields: [handledById], references: [id])
+  User_Message_receiverIdToUser  User     @relation("Message_receiverIdToUser", fields: [receiverId], references: [id])
+  User_Message_senderIdToUser    User     @relation("Message_senderIdToUser", fields: [senderId], references: [id])
+
+  @@index([handledById], map: "Message_handledById_fkey")
+  @@index([receiverId], map: "Message_receiverId_fkey")
+  @@index([senderId], map: "Message_senderId_fkey")
+}
+
+model NewArrivals {
+  id          String   @id
+  imageUrl    String?
+  hyperLink   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  description String?  @db.Text
+  mrp         Float?
+  price       Float?
+  title       String?
+}
+
+model Newsletter {
+  id        String   @id
+  email     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model Notification {
+  id        String   @id
+  userId    String
+  message   String?  @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  hyperLink String?  @default("")
+  title     String
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Notification_userId_fkey")
+}
+
+model OrderDetails {
+  id             String                      @id
+  userId         String
+  totalPrice     Float
+  status         OrderDetails_status
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime
+  discountId     String?
+  orderId        String                      @unique
+  paymentMethod  OrderDetails_paymentMethod?
+  notes          String?                     @db.Text
+  trackingId     String?
+  addressId      String?
+  finalPrice     Float?
+  UserAddress    UserAddress?                @relation(fields: [addressId], references: [id])
+  Discount       Discount?                   @relation(fields: [discountId], references: [id])
+  User           User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  OrderItem      OrderItem[]
+  PaymentDetails PaymentDetails[]
+
+  @@index([addressId], map: "OrderDetails_addressId_fkey")
+  @@index([discountId], map: "OrderDetails_discountId_fkey")
+  @@index([userId], map: "OrderDetails_userId_fkey")
+}
+
+model OrderItem {
+  id            String          @id
+  orderId       String
+  productId     String
+  quantity      Int
+  price         Float
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime
+  sizeId        String?
+  colorId       String?
+  imageId       String?
+  isReviewed    Boolean         @default(false)
+  ProductColor  ProductColor?   @relation(fields: [colorId], references: [id])
+  ProductImage  ProductImage?   @relation(fields: [imageId], references: [id])
+  OrderDetails  OrderDetails    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  Product       Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ProductSize   ProductSize?    @relation(fields: [sizeId], references: [id])
+  ReturnRequest ReturnRequest[]
+
+  @@index([colorId], map: "OrderItem_colorId_fkey")
+  @@index([imageId], map: "OrderItem_imageId_fkey")
+  @@index([orderId], map: "OrderItem_orderId_fkey")
+  @@index([productId], map: "OrderItem_productId_fkey")
+  @@index([sizeId], map: "OrderItem_sizeId_fkey")
+}
+
+model Otp {
+  id        String   @id
+  userId    String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Otp_userId_fkey")
+}
+
+model PaymentDetails {
+  id           String       @id
+  orderId      String
+  amount       Float
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime
+  bank         String?      @default("")
+  currency     String
+  method       String
+  order_id     String
+  payment_id   String
+  upi          String?      @default("")
+  wallet       String?      @default("")
+  OrderDetails OrderDetails @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId], map: "PaymentDetails_orderId_fkey")
+}
+
+model Privilege {
+  id            String          @id
+  name          String          @unique
+  label         String?
+  UserPrivilege UserPrivilege[]
+}
+
+model Product {
+  id                   String             @id
+  slug                 String             @unique
+  isReturnable         Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime
+  thumbnailUrl         String
+  isActive             Boolean            @default(false)
+  description          String?            @db.Text
+  summary              String?            @db.Text
+  customerTypeId       String?
+  userId               String
+  estimatedDeliveryDay Int?
+  styleId              String             @unique
+  title                String
+  returnPolicy         String?            @db.Text
+  views                Int                @default(0)
+  displayPrice         Float              @default(0)
+  tags                 Json
+  longTailKeyword      String?
+  affiliateId          String             @unique
+  isCODAvailable       Boolean            @default(true)
+  ogImage              String?
+  sellerCode           String?
+  sizeChartId          String?
+  fabricId             String?
+  seoTitle             String?
+  seoDescription       String?            @db.Text
+  CartItem             CartItem[]
+  Discount             Discount[]
+  OrderItem            OrderItem[]
+  CustomerType         CustomerType?      @relation(fields: [customerTypeId], references: [id])
+  ProductFabric        ProductFabric?     @relation(fields: [fabricId], references: [id])
+  SizeChart            SizeChart?         @relation(fields: [sizeChartId], references: [id])
+  User                 User               @relation(fields: [userId], references: [id])
+  ProductImage         ProductImage[]
+  ProductInventory     ProductInventory[]
+  ProductReview        ProductReview[]
+  WishlistItem         WishlistItem[]
+  ProductCategory      ProductCategory[]  @relation("ProductCategories")
+  Product_A            Product[]          @relation("SimilarProducts")
+  Product_B            Product[]          @relation("SimilarProducts")
+  SubCategory          SubCategory[]      @relation("SubcategoryProducts")
+
+  @@index([customerTypeId], map: "Product_customerTypeId_fkey")
+  @@index([fabricId], map: "Product_fabricId_fkey")
+  @@index([sizeChartId], map: "Product_sizeChartId_fkey")
+  @@index([userId], map: "Product_userId_fkey")
+}
+
+model ProductCategory {
+  id             String        @id
+  name           String
+  slug           String        @unique
+  isVisible      Boolean       @default(false)
+  seoTitle       String?
+  seoDescription String?       @db.Text
+  AnchorText     AnchorText?
+  Quotes         Quotes[]
+  SubCategory    SubCategory[]
+  Product        Product[]     @relation("ProductCategories")
+
+  @@unique([name, slug])
+}
+
+model ProductColor {
+  id           String         @id
+  name         String
+  code         String
+  slug         String         @unique
+  CartItem     CartItem[]
+  OrderItem    OrderItem[]
+  ProductImage ProductImage[]
+}
+
+model ProductFabric {
+  id      String    @id
+  name    String
+  slug    String    @unique
+  Product Product[]
+}
+
+model ProductImage {
+  id           String        @id
+  productId    String
+  imageUrl     String
+  colorId      String?
+  altText      String?
+  caption      String?
+  CartItem     CartItem[]
+  OrderItem    OrderItem[]
+  ProductColor ProductColor? @relation(fields: [colorId], references: [id])
+  Product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([colorId], map: "ProductImage_colorId_fkey")
+  @@index([productId], map: "ProductImage_productId_fkey")
+}
+
+model ProductInventory {
+  id          String       @id
+  productId   String
+  mrp         Int
+  price       Int
+  sizeId      String?
+  stock       Int
+  minQuantity Int          @default(1)
+  discount    Float?
+  Product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ProductSize ProductSize? @relation(fields: [sizeId], references: [id])
+
+  @@unique([productId, sizeId])
+  @@index([productId], map: "ProductInventory_productId_fkey")
+  @@index([sizeId], map: "ProductInventory_sizeId_fkey")
+}
+
+model ProductReview {
+  id        String   @id
+  userId    String
+  productId String
+  rating    Int
+  review    String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  images    Json
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([productId], map: "ProductReview_productId_fkey")
+  @@index([userId], map: "ProductReview_userId_fkey")
+}
+
+model ProductSize {
+  id               String             @id
+  name             String
+  slug             String             @unique
+  OrderItem        OrderItem[]
+  ProductInventory ProductInventory[]
+}
+
+model ProductWeek {
+  id        String  @id
+  title     String?
+  hyperLink String?
+  imageUrl  String?
+}
+
+model Quotes {
+  id              String          @id
+  text            String?         @db.Text
+  imageUrl        String?
+  hyperLink       String?
+  categoryId      String
+  ProductCategory ProductCategory @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId], map: "Quotes_categoryId_fkey")
+}
+
+model ReturnRequest {
+  id          String               @id
+  orderItemId String
+  reason      String
+  status      ReturnRequest_status @default(PENDING)
+  requestedAt DateTime             @default(now())
+  resolvedAt  DateTime?
+  OrderItem   OrderItem            @relation(fields: [orderItemId], references: [id])
+
+  @@index([orderItemId], map: "ReturnRequest_orderItemId_fkey")
+}
+
+model Rewards {
+  id          String  @id
+  userId      String
+  title       String?
+  code        String?
+  description String?
+  User        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Rewards_userId_fkey")
+}
+
+model SearchQuery {
+  id        String   @id
+  query     String
+  createdAt DateTime @default(now())
+  userId    String
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "SearchQuery_userId_fkey")
+}
+
+model Session {
+  id        String    @id
+  userId    String
+  token     String    @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  expiresAt DateTime?
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Session_userId_fkey")
+}
+
+model ShopByOccasion {
+  id                    String                  @id
+  occasionName          String?
+  categoryHyperLinks    String?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime
+  ShopByOccasionProduct ShopByOccasionProduct[]
+}
+
+model ShopByOccasionProduct {
+  id               String          @id
+  imageUrl         String
+  hyperLink        String
+  shopByOccasionId String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime
+  ShopByOccasion   ShopByOccasion? @relation(fields: [shopByOccasionId], references: [id])
+
+  @@index([shopByOccasionId], map: "ShopByOccasionProduct_shopByOccasionId_fkey")
+}
+
+model ShopBySeason {
+  id                  String                @id
+  videoUrl            String?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  ShopBySeasonProduct ShopBySeasonProduct[]
+}
+
+model ShopBySeasonProduct {
+  id           String       @id
+  imageUrl     String
+  description  String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime
+  seasonId     String
+  hyperLink    String
+  ShopBySeason ShopBySeason @relation(fields: [seasonId], references: [id])
+
+  @@index([seasonId], map: "ShopBySeasonProduct_seasonId_fkey")
+}
+
+model Showcases {
+  id                String   @id
+  title             String
+  imageUrl          String
+  hyperLink         String
+  categoryHyperLink String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime
+}
+
+model SizeChart {
+  id        String    @id
+  title     String?
+  imageUrl  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  productId String?
+  Product   Product[]
+}
+
+model SocialLinks {
+  id        String  @id
+  imageUrl  String?
+  hyperLink String?
+}
+
+model StaticMessages {
+  id        String                @id
+  userId    String
+  status    StaticMessages_status @default(PENDING)
+  message   String                @db.Text
+  createdAt DateTime              @default(now())
+  User      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "StaticMessages_userId_fkey")
+}
+
+model SubCategory {
+  id              String          @id
+  name            String
+  slug            String
+  categoryId      String
+  imageUrl        String?
+  seoTitle        String?
+  seoDescription  String?         @db.Text
+  ProductCategory ProductCategory @relation(fields: [categoryId], references: [id])
+  Product         Product[]       @relation("SubcategoryProducts")
+
+  @@index([categoryId], map: "SubCategory_categoryId_fkey")
+}
+
+model SupportTicket {
+  id         String               @id
+  userId     String
+  subject    String
+  message    String               @db.Text
+  status     SupportTicket_status @default(OPEN)
+  createdAt  DateTime             @default(now())
+  resolvedAt DateTime?
+  User       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "SupportTicket_userId_fkey")
+}
+
+model Tags {
+  id  String @id
+  tag String @unique
+}
+
+model Trending {
+  id        String   @id
+  videoUrl  String?
+  title     String?
+  price     String?
+  hyperLink String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  avatarUrl String?
+}
+
+model UpdateHistory {
+  id          String   @id
+  userId      String
+  title       String
+  description String   @db.Text
+  createdAt   DateTime @default(now())
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "UpdateHistory_userId_fkey")
+}
+
+model User {
+  id                                String           @id
+  email                             String           @unique
+  password                          String
+  createdAt                         DateTime         @default(now())
+  updatedAt                         DateTime
+  isVerified                        Boolean          @default(false)
+  role                              User_role        @default(BUYER)
+  firstName                         String?
+  lastName                          String?
+  status                            User_status      @default(ACTIVE)
+  profileUrl                        String?          @default("")
+  mobileNumber                      String?
+  whatsAppNumber                    String?
+  isLoggedIn                        Boolean          @default(false)
+  isViewed                          Boolean          @default(false)
+  is2FA                             Boolean          @default(false)
+  assignedStaffId                   String?
+  AuditLog                          AuditLog[]
+  CartItem                          CartItem[]
+  DeleteRequest                     DeleteRequest[]
+  DropMessage                       DropMessage[]
+  Message_Message_handledByIdToUser Message[]        @relation("Message_handledByIdToUser")
+  Message_Message_receiverIdToUser  Message[]        @relation("Message_receiverIdToUser")
+  Message_Message_senderIdToUser    Message[]        @relation("Message_senderIdToUser")
+  Notification                      Notification[]
+  OrderDetails                      OrderDetails[]
+  Otp                               Otp[]
+  Product                           Product[]
+  ProductReview                     ProductReview[]
+  Rewards                           Rewards[]
+  SearchQuery                       SearchQuery[]
+  Session                           Session[]
+  StaticMessages                    StaticMessages[]
+  SupportTicket                     SupportTicket[]
+  UpdateHistory                     UpdateHistory[]
+  User                              User?            @relation("UserToUser", fields: [assignedStaffId], references: [id])
+  other_User                        User[]           @relation("UserToUser")
+  UserAddress                       UserAddress[]
+  UserPrivilege                     UserPrivilege[]
+  WishlistItem                      WishlistItem[]
+
+  @@index([assignedStaffId], map: "User_assignedStaffId_fkey")
+}
+
+model UserAddress {
+  id              String         @id
+  userId          String
+  addressLine1    String
+  addressLine2    String?
+  city            String
+  state           String
+  zipCode         String
+  country         String
+  mobileNumber    String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime
+  isDefault       Boolean
+  fullName        String?
+  altMobileNumber String?
+  OrderDetails    OrderDetails[]
+  User            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "UserAddress_userId_fkey")
+}
+
+model UserPrivilege {
+  id          String    @id
+  userId      String
+  privilegeId String
+  createdAt   DateTime  @default(now())
+  Privilege   Privilege @relation(fields: [privilegeId], references: [id])
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([privilegeId], map: "UserPrivilege_privilegeId_fkey")
+  @@index([userId], map: "UserPrivilege_userId_fkey")
+}
+
+model Vides {
+  id          String   @id
+  videoUrl    String
+  title       String
+  description String
+  hyperLink   String
+  price       Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  productId   String?
+}
+
+model Visitor {
+  id        String   @id
+  ipAddress String   @unique
+  cookieId  String?  @unique
+  createdAt DateTime @default(now())
+}
+
+model WishlistItem {
+  id        String   @id
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([productId], map: "WishlistItem_productId_fkey")
+  @@index([userId], map: "WishlistItem_userId_fkey")
+}
+
+enum StaticMessages_status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OrderDetails_status {
+  INCOMPLETE
+  PENDING
+  APPROVED
+  SHIPPED
+  INTRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum ReturnRequest_status {
+  PENDING
+  APPROVED
+  REJECTED
+  REFUNDED
+}
+
+enum Discount_type {
+  PERCENTAGE
+  FIXED
+}
+
+enum SupportTicket_status {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum DeleteRequest_status {
+  REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum User_role {
+  ADMIN
+  SELLER
+  BUYER
+  STAFF
+}
+
+enum OrderDetails_paymentMethod {
+  COD
+  ONLINE
+}
+
+enum User_status {
+  ACTIVE
+  DEACTIVE
+  BANNED
+}

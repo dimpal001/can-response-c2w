@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("MAIN_DB_URL")
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  createdAt DateTime  @default(now())
+  message   Message[]
+}
+
+enum MessageStatus {
+  APPROVED
+  REJECTED
+  PENDING
+}
+
+model Message {
+  id         String        @id @default(cuid())
+  userId     String?
+  status     MessageStatus @default(PENDING)
+  categoryId String
+  message    String        @db.Text
+  createdAt  DateTime      @default(now())
+  category   Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}

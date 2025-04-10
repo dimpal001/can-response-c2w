@@ -196,6 +196,13 @@ const CategoriesPage = () => {
                         action cannot be undone.
                       </DialogDescription>
                     </DialogHeader>
+                    <div className='my-4 p-3 bg-red-50 border border-red-200 rounded-md text-red-600'>
+                      <p className='font-medium'>Warning:</p>
+                      <p>
+                        All messages associated with this category will also be
+                        permanently erased.
+                      </p>
+                    </div>
                     <DialogFooter className='flex justify-end gap-2'>
                       <DialogClose>
                         <Button

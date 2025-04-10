@@ -6,33 +6,61 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { MailIcon, LockIcon } from 'lucide-react'
-import { useAuth } from '../context/AuthContext'
 import { useRouter } from 'next/navigation'
+import axios from 'axios'
+import { baseUrl } from '../components/api'
+import Cookies from 'js-cookie'
+import { jwtDecode } from 'jwt-decode'
+import { useAuth } from '../context/AuthContext'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const { enqueueSnackbar } = useSnackbar()
-  const { login } = useAuth()
   const router = useRouter()
+
+  const { setUser } = useAuth()
 
   const handleLogin = async (e) => {
     e.preventDefault()
     setLoading(true)
 
-    const result = await login(email, password)
-
-    if (result?.user) {
+    try {
+      const response = await axios.post(
+        `${baseUrl}/api/auth`,
+        {
+          email,
+          password,
+        },
+        {
+          withCredentials: true,
+        }
+      )
+      Cookies.set('auth_token', response.data.token, { expires: 1 })
+      const token = Cookies.get('auth_token')
+      if (token) {
+        const decoded = jwtDecode(token)
+        setUser({
+          id: decoded.id,
+          email: decoded.email,
+          name: decoded.name,
+          role: decoded.role,
+        })
+      }
       enqueueSnackbar('Login successful!', { variant: 'success' })
       router.push('/dashboard')
-    } else {
-      enqueueSnackbar(result?.error || 'Login failed. Please try again.', {
-        variant: 'error',
-      })
+    } catch (error) {
+      console.log(error?.message)
+      enqueueSnackbar(
+        error?.response?.data?.error || 'Login failed. Please try again.',
+        {
+          variant: 'error',
+        }
+      )
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   useEffect(() => {
